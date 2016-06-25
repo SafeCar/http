@@ -10,42 +10,6 @@
 <body>
 
 
-<button onclick="permission(1)">SeatBelt</button>
-<button onclick="permission(2)">inhibited</button>
-<button onclick="permission(3)">location</button>
- 
-
-<script>
-function permission(getP){
-switch(getP){
-	case 1:
-		vue.seatbelt=!vue.seatbelt;
-		break;
-	case 2:
-		vue.inhibited=!vue.inhibited;
-		break;
-	case 3:
-		vue.loc=!vue.loc;
-		break;
-}
-
-var base_URL = '192.168.128.245:4567';
-
- $.get("http://driver123:secret234@"+base_URL+"/auth_test",
- function(status){
-    alert("Status: " + status);
- });
- 
- $.get("http://"+base_URL+"/permission",
- function(status,permissions){
-    alert("Status: " + status+ "\n permission:" + permissions);
- });
-
-
-
-}
-</script>
-
 <div id="app">
     <div v-if="seatbelt">
       Getting permission of SeatBelt is  {{ seatbelt }}
@@ -59,6 +23,16 @@ var base_URL = '192.168.128.245:4567';
     <div v-if="loc">
       Getting permission of location is  {{ loc }}
     </div>
+    
+    <div v-if="speed">
+      Getting permission of speed is  {{ speed }}
+    </div>
+    
+    <div v-if="crash">
+      Getting permission of crash is  {{ crash }}
+    </div>
+
+
 
 </div>
 
@@ -66,21 +40,21 @@ var base_URL = '192.168.128.245:4567';
 var vue = new Vue({
   el: '#app',
   data: {
-  	seatbelt: false,
-  	inhibited: false,
-  	loc: false,
+    seatbelt: false,
+    inhibited: false,
+    loc: false,
+    speed: false,
+    crash: false,
     todos: [
       { text: 'Getting permission of SeatBelt is' + this.seatbelt },
       { text: 'Getting permission of inhibited is' + this.inhibited},
-      { text: 'Getting permission of location is' + this.loc}
+      { text: 'Getting permission of location is' + this.loc},
+      { text: 'Getting permission of speed is' + this.speed},
+      { text: 'Getting permission of crash is' + this.crash}
     ]
   }
 })
-</script>
 
-
-
-<script>
 var base_URL = '192.168.128.245:4567';
 var  wsServer = 'ws://' + base_URL + '/event'; 
 var  websocket = new WebSocket(wsServer); 
@@ -88,23 +62,27 @@ var  websocket = new WebSocket(wsServer);
 
 function onOpen(evt) { 
 
-	var result = {
-  		driver_id: "string",
-  		secret_id: "string",
-  		filters: [
-    		{name: "seatbelt", range: [0, 1, 2, 3]},
-   		 	{name: "inhibited", range: ["airbag", "ESC"]},
-   		 	{name: "location", range: [121.12121, 25.25252]}
-  		]};
-  	if (vue.seatbelt == true){
-  		result.filters.push({name: "seatbelt", range: [0, 1, 2, 3]});
-  	}
-  	if (vue.inhibited == true){
-  		result.filters.push({name: "inhibited", range: ["airbag", "ESC"]});
-  	}
-  	if (vue.loc == true){
-  		result.filters.push({name: "location", range: [121.12121, 25.25252]});
-  	}
+  var result = {
+      driver_id: "string",
+      secret_id: "string",
+      filters: [
+        
+      ]};
+    if (vue.seatbelt == true){
+      result.filters.push({name: "seatbelt", range: [0, 1, 2, 3]});
+    }
+    if (vue.inhibited == true){
+      result.filters.push({name: "inhibited", range: ["airbag", "ESC"]});
+    }
+    if (vue.loc == true){
+      result.filters.push({name: "location", range: [121.12121, 25.25252]});
+    }
+    if (vue.speed == true){
+      result.filters.push({name: "speed", limit: 120});
+    }
+    if (vue.crash == true){
+      result.filters.push({name: "crash"});
+    }
      websocket.send(JSON.stringify(result));
 
 } 
@@ -129,8 +107,102 @@ function onOpen(evt) {
 
 
 
+function permission(getP){
+var base_URL = '192.168.128.245:4567';
+var  wsServer = 'ws://' + base_URL + '/event'; 
+var  websocket = new WebSocket(wsServer); 
+websocket.close();
+switch(getP){
+	case 1:
+		vue.seatbelt=!vue.seatbelt;
+		break;
+	case 2:
+		vue.inhibited=!vue.inhibited;
+		break;
+	case 3:
+		vue.loc=!vue.loc;
+		break;
+  case 4:
+    vue.speed=!vue.speed;
+    break;
+  case 5:
+    vue.crash=!vue.crash;
+    break;
+    }
+
+var base_URL = '192.168.128.245:4567';
+var  wsServer = 'ws://' + base_URL + '/event'; 
+var  websocket = new WebSocket(wsServer); 
+
+function onOpen(evt) { 
+
+  var result = {
+      driver_id: "string",
+      secret_id: "string",
+      filters: [
+        
+      ]};
+    if (vue.seatbelt == true){
+      result.filters.push({name: "seatbelt", range: [0, 1, 2, 3]});
+    }
+    if (vue.inhibited == true){
+      result.filters.push({name: "inhibited", range: ["airbag", "ESC"]});
+    }
+    if (vue.loc == true){
+      result.filters.push({name: "location", range: [121.12121, 25.25252]});
+    }
+    if (vue.speed == true){
+      result.filters.push({name: "speed", limit: 120});
+    }
+    if (vue.crash == true){
+      result.filters.push({name: "crash"});
+    }
+     websocket.send(JSON.stringify(result));
+
+} 
+
+ websocket.onopen = function (evt) { onOpen(evt) }; 
+ websocket.onclose = function (evt) { onClose(evt) }; 
+ websocket.onmessage = function (evt) { onMessage(evt) }; 
+ websocket.onerror = function (evt) { onError(evt) }; 
+
+
+ function onClose(evt) { 
+ console.log("Disconnected"); 
+ } 
+
+ function onMessage(evt) { 
+ console.log('Retrieved data from server: ' + evt.data); 
+ } 
+
+ function onError(evt) { 
+ console.log('Error occured: ' + evt.data); 
+ }
+
+}
+
+var base_URL = '192.168.128.245:4567';
+
+ $.get("http://driver123:secret234@"+base_URL+"/auth_test",
+ function(status){
+    alert("Status: " + status);
+ });
+ 
+ $.get("http://"+base_URL+"/permission",
+ function(status,permissions){
+    alert("Status: " + status+ "\n permission:" + permissions);
+ });
+
 </script>
 
+
+<button onclick="permission(1)">SeatBelt</button>
+<button onclick="permission(2)">inhibited</button>
+<button onclick="permission(3)">location</button>
+<button onclick="permission(4)">speed</button>
+<button onclick="permission(5)">crash</button>
+
+ 
 
 
 
