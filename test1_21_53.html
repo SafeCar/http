@@ -81,36 +81,39 @@ var vue = new Vue({
 
 
 <script>
-var  wsServer = 'http://localhost:8080//event'; 
+var base_URL = '192.168.128.245:4567';
+var  wsServer = 'ws://' + base_URL + '/event'; 
 var  websocket = new WebSocket(wsServer); 
- websocket.onopen = function (evt) { onOpen(evt) }; 
- websocket.onclose = function (evt) { onClose(evt) }; 
- websocket.onmessage = function (evt) { onMessage(evt) }; 
- websocket.onerror = function (evt) { onError(evt) }; 
+
 
 function onOpen(evt) { 
 
 	var result = {
-  		driver_id: string,
-  		secret_id: string,
+  		driver_id: "string",
+  		secret_id: "string",
   		filters: [
     		{name: "seatbelt", range: [0, 1, 2, 3]},
    		 	{name: "inhibited", range: ["airbag", "ESC"]},
    		 	{name: "location", range: [121.12121, 25.25252]}
   		]};
-  	if (seatbelt == true){
+  	if (vue.seatbelt == true){
   		result.filters.push({name: "seatbelt", range: [0, 1, 2, 3]});
   	}
-  	if (inhibited == true){
+  	if (vue.inhibited == true){
   		result.filters.push({name: "inhibited", range: ["airbag", "ESC"]});
   	}
-  	if (loc == true){
+  	if (vue.loc == true){
   		result.filters.push({name: "location", range: [121.12121, 25.25252]});
   	}
-  	
-	wsServer.send(JSON.stringify(result));
+     websocket.send(JSON.stringify(result));
 
 } 
+
+ websocket.onopen = function (evt) { onOpen(evt) }; 
+ websocket.onclose = function (evt) { onClose(evt) }; 
+ websocket.onmessage = function (evt) { onMessage(evt) }; 
+ websocket.onerror = function (evt) { onError(evt) }; 
+
 
  function onClose(evt) { 
  console.log("Disconnected"); 
